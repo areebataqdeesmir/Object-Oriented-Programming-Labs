@@ -15,10 +15,8 @@ struct Student {
 
 int main() {
 
-    // Pointer to structure
     Student *ptr = new Student;
 
-    // Dynamically assign values
     cout << "Enter First Name: ";
     cin >> ptr->firstName;
 
@@ -31,10 +29,8 @@ int main() {
     cout << "Enter Marks: ";
     cin >> ptr->marks;
 
-    // Call function using pointer
     ptr->displayStudentInfo();
 
-    // Free memory
     delete ptr;
 
     return 0;
