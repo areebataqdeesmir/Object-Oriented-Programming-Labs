@@ -1,0 +1,22 @@
+===== FLIGHTS (8) =====
+101,Quetta,Lahore,2026-06-01,50,Domestic
+202,Karachi,Dubai,2026-06-05,40,Charter
+303,Islamabad,London,2026-06-10,60,International
+404,Peshawar,Karachi,2026-06-12,45,Domestic
+505,Lahore,Doha,2026-06-15,55,International
+606,Quetta,Islamabad,2026-06-18,50,Domestic
+707,Karachi,Istanbul,2026-06-20,70,International
+808,Lahore,Quetta,2026-06-22,40,Charter
+
+
+===== PASSENGERS (10) =====
+1,Ali Khan,Economy
+2,Sara Ahmed,Business
+3,Hassan Mir,FirstClass
+4,Areeba Mir,Economy
+5,Usman Ali,Business
+6,Fatima Noor,Economy
+7,Ahmed Raza,FirstClass
+8,Zainab Khan,Business
+9,Imran Shah,Economy
+10,Maryam Ali,FirstClass
