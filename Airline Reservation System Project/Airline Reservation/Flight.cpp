@@ -51,6 +51,10 @@ bool Flight::hasSeats() {
     return availableSeats > 0;
 }
 
+void Flight::cancelSeat(){
+	availableSeats++;
+}
+
 void Flight::bookSeat() {
     if (availableSeats > 0)
         availableSeats--;

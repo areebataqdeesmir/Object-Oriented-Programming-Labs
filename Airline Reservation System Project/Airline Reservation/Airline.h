@@ -37,7 +37,7 @@ void viewPassenger(int);
 void viewBookingHistory(int);  
 
 // BOOKING  
-void bookTicket(int, int, int);  
+bool bookTicket(int tid, int pid, int fid);  
 void cancelTicket(int);  
 
 // REPORTS  

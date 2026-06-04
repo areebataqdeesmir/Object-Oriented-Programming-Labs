@@ -34,7 +34,8 @@ public:
 
     int getTotalSeats();
     int getAvailableSeats();
-
+    
+    void cancelSeat();
     bool hasSeats();
     void bookSeat();
 };

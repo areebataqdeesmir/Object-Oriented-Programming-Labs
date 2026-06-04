@@ -32,7 +32,13 @@ Airline::Airline() {
     fCount = 0;
     pCount = 0;
     tCount = 0;
-  
+
+    for (int i = 0; i < 100; i++) {
+        passengers[i] = NULL;
+        tickets[i] = NULL;
+        flights[i] = NULL;
+    }
+
     flights[fCount++] =
         new DomesticFlight(101, "Quetta", "Lahore", "2026-06-01", 50);
 
@@ -42,7 +48,6 @@ Airline::Airline() {
     flights[fCount++] =
         new InternationalFlight(303, "Islamabad", "London", "2026-06-10", 60);
 }
-
 // ================= FLIGHTS =================
 void Airline::addFlight(Flight* f) {
 
@@ -161,47 +166,67 @@ return;
 cout << "Passenger Not Found\n";
 }
 
-// ================= BOOKING =================
-void Airline::bookTicket(int tid, int pid, int fid) {
+bool Airline::bookTicket(int tid, int pid, int fid) {
 
-Flight* f = NULL;  
-Passenger* p = NULL;  
+    Flight* f = NULL;
+    Passenger* p = NULL;
 
-for (int i = 0; i < fCount; i++)  
-    if (flights[i]->getFlightNumber() == fid)  
-        f = flights[i];  
+    // find passenger
+    for (int i = 0; i < pCount; i++) {
+        if (passengers[i] != NULL && passengers[i]->getID() == pid) {
+            p = passengers[i];
+            break;
+        }
+    }
 
-for (int i = 0; i < pCount; i++)  
-    if (passengers[i]->getID() == pid)  
-        p = passengers[i];  
+    // find flight
+    for (int i = 0; i < fCount; i++) {
+        if (flights[i] != NULL && flights[i]->getFlightNumber() == fid) {
+            f = flights[i];
+            break;
+        }
+    }
 
-try {  
-    if (!f) throw FlightNotFoundException();  
-    if (!p) throw PassengerNotFoundException();  
-    if (!f->hasSeats()) throw FlightFullException();  
+    // INVALID checks
+    if (p == NULL) {
+        cout << "Invalid Passenger ID\n";
+        return false;
+    }
 
-    for (int i = 0; i < tCount; i++) {  
-        if (tickets[i] &&  
-            tickets[i]->getPassenger()->getID() == pid &&  
-            tickets[i]->getFlight()->getFlightNumber() == fid) {  
-            throw AlreadyBookedException();  
-        }  
-    }  
+    if (f == NULL) {
+        cout << "Invalid Flight ID\n";
+        return false;
+    }
 
-    f->bookSeat();  
+    if (!f->hasSeats()) {
+        cout << "Flight Full\n";
+        return false;
+    }
 
-    int seat = f->getTotalSeats() - f->getAvailableSeats();  
+    // duplicate booking check
+    for (int i = 0; i < tCount; i++) {
 
-    tickets[tCount++] = new Ticket(tid, p, f, seat, 1000);  
+        if (tickets[i] != NULL &&
+            tickets[i]->getPassenger() != NULL &&
+            tickets[i]->getFlight() != NULL &&
+            tickets[i]->getPassenger()->getID() == pid &&
+            tickets[i]->getFlight()->getFlightNumber() == fid) {
 
-    p->addHistory("Booked Flight");  
+            cout << "Already Booked\n";
+            return false;
+        }
+    }
 
-    cout << "Booking done successfully\n";  
-}  
-catch (AirlineException &e) {  
-    e.showMessage();  
-}
+    // booking
+    f->bookSeat();
 
+    int seat = f->getTotalSeats() - f->getAvailableSeats();
+
+    tickets[tCount++] = new Ticket(tid, p, f, seat, 1000);
+
+    p->addHistory("Booked Flight");
+
+    return true;
 }
 
 // ================= CANCEL =================
@@ -211,16 +236,21 @@ void Airline::cancelTicket(int tid) {
 
     for (int i = 0; i < tCount; i++) {
 
-        if (tickets[i] && tickets[i]->getTicketID() == tid) {
+        if (tickets[i] != NULL &&
+            tickets[i]->getTicketID() == tid) {
 
             found = true;
 
             double fare = 1000;
 
             Passenger* p = tickets[i]->getPassenger();
+            Flight* f = tickets[i]->getFlight();
 
             double refundPercent = p->refundPercentage();
             double refundAmount = (fare * refundPercent) / 100;
+
+            // 🔴 IMPORTANT FIX: seat restore
+            f->cancelSeat();
 
             tickets[i]->cancelTicket();
             p->addHistory("Cancelled Ticket");
@@ -240,7 +270,7 @@ void Airline::cancelTicket(int tid) {
     }
 
     if (!found) {
-        cout << "\n? Ticket Not Found\n";
+        cout << "Ticket Not Found\n";
     }
 }
 // ================= REPORTS =================
@@ -580,6 +610,12 @@ if (!validName) {
     cout << "Invalid Name (only alphabets allowed)\n";
     break;
 }
+cout << "Enter Type (1.Economy 2.Business 3.FirstClass): ";
+cin >> type;
+if(type < 1 || type > 3){
+    cout << "Invalid Type\n";
+    break;
+}
     if (type == 1)
         registerPassenger(new EconomyPassenger(id, name));
     else if (type == 2)
@@ -603,11 +639,22 @@ case 5: {
         break;
     }
 
+    if (pCount == 0) {
+        cout << "No Passenger Registered\n";
+        break;
+    }
+
     bool found = false;
 
     for (int i = 0; i < pCount; i++) {
-        if (passengers[i]->getID() == id) {
+
+        if (passengers[i] != NULL &&
+            passengers[i]->getID() == id) {
+
             passengers[i]->display();
+
+            cout << "\nPassenger Found\n";
+
             found = true;
             break;
         }
@@ -618,9 +665,39 @@ case 5: {
 
     break;
 }
+
 case 6: {
 
     int tid, pid, fid;
+
+    cout << "Enter Ticket ID: ";
+    cin >> tid;
+
+    cout << "Enter Passenger ID: ";
+    cin >> pid;
+
+    cout << "Enter Flight ID: ";
+    cin >> fid;
+
+    if (cin.fail()) {
+        cout << "Invalid Input\n";
+        cin.clear();
+        cin.ignore(1000, '\n');
+        break;
+    }
+
+    bool ok = bookTicket(tid, pid, fid);
+
+    if (ok)
+        cout << "Booking Process Completed\n";
+    else
+        cout << "Booking Failed\n";
+
+    break;
+}
+case 7: {
+
+    int tid;
 
     cout << "Enter Ticket ID: ";
     cin >> tid;
@@ -632,68 +709,7 @@ case 6: {
         break;
     }
 
-    cout << "Enter Passenger ID: ";
-    cin >> pid;
-
-    if (cin.fail() || pid <= 0) {
-        cout << "Invalid Passenger ID\n";
-        cin.clear();
-        cin.ignore(1000, '\n');
-        break;
-    }
-
-    cout << "Enter Flight ID: ";
-    cin >> fid;
-
-    if (cin.fail() || fid <= 0) {
-        cout << "Invalid Flight ID\n";
-        cin.clear();
-        cin.ignore(1000, '\n');
-        break;
-    }
-
-    try {
-        bookTicket(tid, pid, fid);
-        cout << "\nTicket Booking Process Completed\n";
-    }
-    catch (AirlineException &e) {
-        e.showMessage();
-        cout << "Ticket Booking Failed\n";
-    }
-
-    break;
-}
-case 7: {
-
-    int tid;
-
-    cout << "\nEnter Ticket ID to Cancel: ";
-    cin >> tid;
-
-    if (cin.fail() || tid <= 0) {
-        cout << "Invalid Ticket ID\n";
-        cin.clear();
-        cin.ignore(1000, '\n');
-        break;
-    }
-
-    bool found = false;
-
-    for (int i = 0; i < tCount; i++) {
-        if (tickets[i] && tickets[i]->getTicketID() == tid) {
-
-            tickets[i]->cancelTicket();
-            tickets[i]->getPassenger()->addHistory("Cancelled Ticket");
-
-            cout << "Ticket Cancelled Successfully \n";
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        cout << "Your Ticket ID is Wrong \n";
-    }
+    cancelTicket(tid);   // 🔴 ONLY THIS
 
     break;
 }
@@ -792,6 +808,4 @@ case 9: {
 } while (ch != 0);
 
 }
-
-
 
