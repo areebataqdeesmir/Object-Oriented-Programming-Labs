@@ -1,0 +1,21 @@
+Q1. How do you model the three vehicle types? Is Car a subclass of Vehicle, or is the type just a field? When would the other approach be better?
+Answer: 
+I modeled Car, Motorbike, and Truck as subclasses of Vehicle using inheritance. All vehicles share common attributes such as vehicle ID, model, daily rate, and availability, so these are stored in the Vehicle class. The subclasses contain their own specific attributes and behaviors. Using a type field would be suitable if all vehicles behaved the same, but inheritance is better here because each vehicle type has different rental cost rules.
+Q2. Where does the pricing logic live? Is calculateCost() a virtual method on Vehicle, a free function, or a method on Rental? Each placement has consequences — pick one and own it.
+Answer:
+ I placed the pricing logic in a virtual function called calculateCost() in the Vehicle class. Each derived class overrides this function according to its pricing policy. This design follows polymorphism and keeps the pricing behavior inside the vehicle classes. As a result, RentalSystem does not need to know how each vehicle type calculates its cost.
+
+Q3. Who owns the rental record? Does Customer hold it? Does a central RentalSystem manage all rentals? Does Vehicle know it is currently rented? Design the ownership clearly.
+Answer:
+ The RentalSystem class manages all rental records centrally. Customers only store whether they currently have an active rental, while vehicles store their availability status. Rental objects contain information about the customer, vehicle, rental duration, cost, and rental status. This design keeps responsibilities separated and makes the system easier to maintain.
+
+Q4. How many classes do you need? There is no required number. Think about whether a Fleet class adds value, whether Rental deserves its own class, and whether a separate class improves or obscures your design.
+Answer: 
+I used seven classes: Vehicle, Car, Motorbike, Truck, Customer, Rental, and RentalSystem. Rental deserves its own class because it represents a separate concept with its own data and behavior. I did not create a Fleet class because RentalSystem already manages the collection of vehicles, and adding another class would increase complexity without providing significant benefits.
+
+Q5. Where does runtime polymorphism actually appear? It must appear somewhere meaningful — not just as a technicality. Identify the exact line in your main() where a base pointer calls a virtual method and explain why that is the right place.
+Answer:
+ Runtime polymorphism occurs when a Vehicle pointer calls the virtual function:
+C++
+vehicle->calculateCost(days);
+The function that executes depends on the actual object type at runtime. If the object is a Car, Motorbike, or Truck, the corresponding overridden function is called. This is meaningful because the system can calculate rental costs correctly without checking the vehicle type manually. These different behaviors are selected automatically through polymorphism.
